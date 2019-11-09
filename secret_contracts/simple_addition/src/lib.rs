@@ -19,7 +19,6 @@ use eng_wasm::*;
 use eng_wasm_derive::pub_interface;
 use serde::{Serialize, Deserialize};
 
-static OWNER: &str = "owner";
 static SECRET_MESSAGES: &str = "secretMessages";
 static DUMMY_MESSAGES: &str = "dummyMessages";
 static REAL_PASSWORD: &str = "bananaHammock";
@@ -52,11 +51,11 @@ pub trait ContractInterface{
 
     fn construct(real_password: String, fake_password: String);
 
-    fn storeDummy(message: String);
+    fn store_dummy(message: String);
 
-    fn storeSecrets(accessor: H160, message: String);
+    fn store_secrets(accessor: H160, message: String);
 
-    fn readStorage(password: String) -> String; 
+    fn read_storage(password: String) -> String; 
 
 }
 
@@ -70,7 +69,7 @@ impl ContractInterface for Contract {
         write_state!(FAKE_PASSWORD => fake_password);
     }
     
-    fn storeDummy(message: String) {
+    fn store_dummy(message: String) {
 
         //TODO JA: talk about security to recive this
         // let owner: H160 = read_state!(OWNER).unwrap()
@@ -85,7 +84,7 @@ impl ContractInterface for Contract {
         write_state!(DUMMY_MESSAGES => dummy_messages);
     }
 
-    fn storeSecrets(accessor: H160, message: String) {
+    fn store_secrets(accessor: H160, message: String) {
 
         //TODO JA: talk about security to recive this
         // let owner: H160 = read_state!(OWNER).unwrap()
@@ -101,7 +100,7 @@ impl ContractInterface for Contract {
         write_state!(SECRET_MESSAGES => secret_messages);
     }
 
-    fn readStorage(password: String) -> String {
+    fn read_storage(password: String) -> String {
         let fake_password: String = read_state!(FAKE_PASSWORD).unwrap();
         let real_password: String = read_state!(REAL_PASSWORD).unwrap();
 
@@ -111,8 +110,7 @@ impl ContractInterface for Contract {
 
         let separator = String::from("|");
         if password == fake_password {
-            let mut all_secret_messages: Vec<DummyMessages> = Vec::new();
-            all_secret_messages = Self::get_all_dummy_messages();
+            let all_secret_messages = Self::get_all_dummy_messages();
             for one_secret_message in all_secret_messages {
                 // For a given message, is the user (sender) in the whitelist?
                     // Yes, so add the message.
@@ -129,8 +127,7 @@ impl ContractInterface for Contract {
             return my_concatenated_secret_messages;
         } 
         else if password == real_password {
-            let mut all_secret_messages: Vec<SecretMessages> = Vec::new();
-            all_secret_messages = Self::get_all_secret_messages();
+            let all_secret_messages = Self::get_all_secret_messages();
             for one_secret_message in all_secret_messages {
                 // For a given message, is the user (sender) in the whitelist?
                     // Yes, so add the message.
