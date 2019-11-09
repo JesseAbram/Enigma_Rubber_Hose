@@ -23,6 +23,8 @@ use serde::{Serialize, Deserialize};
 static OWNER: &str = "owner";
 static SECRET_MESSAGES: &str = "secretMessages";
 static DUMMY_MESSAGES: &str = "dummyMessages";
+static REAL_PASSWORD: &str = "bananaHammock";
+static FAKE_PASSWORD: &str = "chickenDinner";
 
 #[derive(Serialize, Deserialize)]
 pub struct DummyMessages {
@@ -35,6 +37,7 @@ pub struct SecretMessages {
     secret_key: H160,
 }
 
+
 impl Contract {
     // Get all secret messages.
     fn get_all_secret_messages() -> Vec<SecretMessages> {
@@ -43,6 +46,7 @@ impl Contract {
     fn get_all_dummy_messages() -> Vec<DummyMessages> {
         read_state!(DUMMY_MESSAGES).unwrap_or_default()
     }
+   
 }
 // For contract-exposed functions, declare such functions under the following public trait:
 #[pub_interface]
@@ -54,9 +58,8 @@ pub trait ContractInterface{
 
     fn storeSecrets(accessor: H160, message: String);
 
-    // fn readDummy(sender: H160, password: String) -> String; 
+    fn readStorage(password: String) -> String; 
 
-    // fn readSecrets(sender: H160, password: String) -> String;
 }
 
 // The implementation of the exported ESC functions should be defined in the trait implementation 
@@ -101,4 +104,37 @@ impl ContractInterface for Contract {
 
         write_state!(SECRET_MESSAGES => secret_messages);
     }
+
+    fn readStorage(password: String) -> String {
+        let fake_password: String = read_state!(FAKE_PASSWORD).unwrap();
+
+        // let real_password =  read_state!(REALPASSWORD).unwrap_or_default();
+
+        let mut my_concatenated_secret_messages: String = String::new();
+
+        let separator = String::from("|");
+        if password == fake_password {
+            let all_secret_messages = Self::get_all_dummy_messages();
+            
+            for one_secret_message in all_secret_messages {
+                // For a given message, is the user (sender) in the whitelist?
+                    // Yes, so add the message.
+                        // Concatenate the message with the others.
+                        my_concatenated_secret_messages.push_str(&one_secret_message.dummy_messages);
+                        // Add the separator.
+                        my_concatenated_secret_messages.push_str(&separator);
+    
+            }
+        }
+
+    
+            // Remove last separator & return messages.
+            my_concatenated_secret_messages.pop();
+            // Return secret messages for sender.
+            return my_concatenated_secret_messages;
+
+    
+    }
+
+
 }
