@@ -31,6 +31,7 @@ pub struct DummyMessages {
 #[derive(Serialize, Deserialize)]
 pub struct SecretMessages {
     secret_messages: String, 
+    // This should idealy be a msg.sender functionality not there
     secret_key: H160,
 }
 
@@ -51,11 +52,11 @@ pub trait ContractInterface{
 
     fn storeDummy(message: String);
 
-    // fn storeAll(message: String);
+    fn storeSecrets(accessor: H160, message: String);
 
     // fn readDummy(sender: H160, password: String) -> String; 
 
-    // fn readAll(sender: H160, password: String) -> String;
+    // fn readSecrets(sender: H160, password: String) -> String;
 }
 
 // The implementation of the exported ESC functions should be defined in the trait implementation 
@@ -82,5 +83,22 @@ impl ContractInterface for Contract {
         });
 
         write_state!(DUMMY_MESSAGES => dummy_messages);
+    }
+
+    fn storeSecrets(accessor: H160, message: String) {
+
+        //TODO JA: talk about security to recive this
+        // let owner: H160 = read_state!(OWNER).unwrap()
+        // assert_eq!(owner, sender)
+
+        let mut secret_messages = Self::get_all_secret_messages();
+        
+
+        secret_messages.push(SecretMessages {
+            secret_messages: message,
+            secret_key: accessor
+        });
+
+        write_state!(SECRET_MESSAGES => secret_messages);
     }
 }
