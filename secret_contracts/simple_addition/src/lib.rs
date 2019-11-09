@@ -22,6 +22,7 @@ use serde::{Serialize, Deserialize};
 
 static OWNER: &str = "owner";
 static SECRET_MESSAGES: &str = "secretMessages";
+static DUMMY_MESSAGES: &str = "dummyMessages";
 
 #[derive(Serialize, Deserialize)]
 pub struct DummyMessages {
@@ -37,6 +38,9 @@ impl Contract {
     // Get all secret messages.
     fn get_all_secret_messages() -> Vec<SecretMessages> {
         read_state!(SECRET_MESSAGES).unwrap_or_default()
+    }
+    fn get_all_dummy_messages() -> Vec<DummyMessages> {
+        read_state!(DUMMY_MESSAGES).unwrap_or_default()
     }
 }
 // For contract-exposed functions, declare such functions under the following public trait:
@@ -65,10 +69,18 @@ impl ContractInterface for Contract {
     }
     
     fn storeDummy(message: String) {
+
+        //TODO JA: talk about security to recive this
         // let owner: H160 = read_state!(OWNER).unwrap()
         // assert_eq!(owner, sender)
 
-        let mut secret_messages = Self::get_all_secret_messages();
-        // secret_messages.push()
+        let mut dummy_messages = Self::get_all_dummy_messages();
+        
+
+        dummy_messages.push(DummyMessages {
+            dummy_messages: message
+        });
+
+        write_state!(DUMMY_MESSAGES => dummy_messages);
     }
 }
