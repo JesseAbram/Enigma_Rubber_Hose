@@ -50,7 +50,7 @@ impl Contract {
 #[pub_interface]
 pub trait ContractInterface{
 
-    fn construct(owner: H160);
+    fn construct(real_password: String, fake_password: String);
 
     fn storeDummy(message: String);
 
@@ -65,8 +65,9 @@ pub trait ContractInterface{
 pub struct Contract;
 impl ContractInterface for Contract {
 
-    fn construct(owner: H160) {
-        write_state!(OWNER => owner);
+    fn construct(real_password: String, fake_password: String) {
+        write_state!(REAL_PASSWORD => real_password);
+        write_state!(FAKE_PASSWORD => fake_password);
     }
     
     fn storeDummy(message: String) {
