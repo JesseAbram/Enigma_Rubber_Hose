@@ -13,7 +13,9 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "discovery compile"
+    "compile": "discovery compile",
+    "start": "discovery start",
+    "deploy": "discovery migrate"
   },
   "author": "",
   "license": "ISC"
