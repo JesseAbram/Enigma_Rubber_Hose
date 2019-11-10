@@ -30,9 +30,9 @@ pub struct DummyMessages {
 }
 #[derive(Serialize, Deserialize)]
 pub struct SecretMessages {
-    secret_messages: String, 
+    secret_messages: String
     // This should idealy be a msg.sender functionality not there
-    secret_key: H160,
+    // secret_key: H160,
 }
 
 impl Contract {
@@ -43,7 +43,26 @@ impl Contract {
     fn get_all_dummy_messages() -> Vec<DummyMessages> {
         read_state!(DUMMY_MESSAGES).unwrap_or_default()
     }
-   
+    fn store_dummy(message: String) {
+        //TODO JA: talk about security to recive this
+        // let owner: H160 = read_state!(OWNER).unwrap()
+        // assert_eq!(owner, sender)
+        let mut dummy_messages = Self::get_all_dummy_messages();
+        dummy_messages.push(DummyMessages {
+            dummy_messages: message
+        });
+        write_state!(DUMMY_MESSAGES => dummy_messages);
+    }
+    fn store_secret(message: String) {
+        //TODO JA: talk about security to recive this
+        // let owner: H160 = read_state!(OWNER).unwrap()
+        // assert_eq!(owner, sender)
+        let mut secret_messages = Self::get_all_secret_messages();
+        secret_messages.push(SecretMessages {
+            secret_messages: message
+        });
+        write_state!(SECRET_MESSAGES => secret_messages);
+    }
 }
 // For contract-exposed functions, declare such functions under the following public trait:
 #[pub_interface]
@@ -51,16 +70,14 @@ pub trait ContractInterface{
 
     fn construct(real_password: String, fake_password: String);
 
-    fn store_dummy(message: String);
+    fn write_storage(password: String, message: String);
 
-    fn store_secrets(accessor: H160, message: String);
-
-    fn read_storage(password: String) -> String; 
+    fn read_storage(password: String) -> String;
 
 }
 
-// The implementation of the exported ESC functions should be defined in the trait implementation 
-// for a new struct. 
+// The implementation of the exported ESC functions should be defined in the trait implementation
+// for a new struct.
 pub struct Contract;
 impl ContractInterface for Contract {
 
@@ -68,36 +85,18 @@ impl ContractInterface for Contract {
         write_state!(REAL_PASSWORD => real_password);
         write_state!(FAKE_PASSWORD => fake_password);
     }
-    
-    fn store_dummy(message: String) {
 
-        //TODO JA: talk about security to recive this
-        // let owner: H160 = read_state!(OWNER).unwrap()
-        // assert_eq!(owner, sender)
+    fn write_storage(password: String, message: String) {
+        let fake_password: String = read_state!(FAKE_PASSWORD).unwrap();
+        let real_password: String = read_state!(REAL_PASSWORD).unwrap();
 
-        let mut dummy_messages = Self::get_all_dummy_messages();
-
-        dummy_messages.push(DummyMessages {
-            dummy_messages: message
-        });
-
-        write_state!(DUMMY_MESSAGES => dummy_messages);
-    }
-
-    fn store_secrets(accessor: H160, message: String) {
-
-        //TODO JA: talk about security to recive this
-        // let owner: H160 = read_state!(OWNER).unwrap()
-        // assert_eq!(owner, sender)
-
-        let mut secret_messages = Self::get_all_secret_messages();
-
-        secret_messages.push(SecretMessages {
-            secret_messages: message,
-            secret_key: accessor
-        });
-
-        write_state!(SECRET_MESSAGES => secret_messages);
+        if password == fake_password {
+            Self::store_dummy(message);
+        } else if password == real_password {
+            Self::store_secret(message);
+        } else {
+            panic!("wrong password");
+        }
     }
 
     fn read_storage(password: String) -> String {
@@ -118,14 +117,14 @@ impl ContractInterface for Contract {
                         my_concatenated_secret_messages.push_str(&one_secret_message.dummy_messages);
                         // Add the separator.
                         my_concatenated_secret_messages.push_str(&separator);
-    
+
             }
 
             // Remove last separator & return messages.
             my_concatenated_secret_messages.pop();
             // Return secret messages for sender.
             return my_concatenated_secret_messages;
-        } 
+        }
         else if password == real_password {
             let all_secret_messages = Self::get_all_secret_messages();
             for one_secret_message in all_secret_messages {
@@ -135,7 +134,7 @@ impl ContractInterface for Contract {
                         my_concatenated_secret_messages.push_str(&one_secret_message.secret_messages);
                         // Add the separator.
                         my_concatenated_secret_messages.push_str(&separator);
-    
+
             }
 
             // Remove last separator & return messages.
