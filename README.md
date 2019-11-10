@@ -2,6 +2,15 @@
 
 This product is a demo of secret smart contracts on Enigma.
 
+## Running 
+
+* ```yarn compile``` (compiles rust smart contracts)
+* ```yarn run```, runs enigma and ganache (must have already gotten docker image)
+* ```yarn deploy``` deploy smart contracts
+* navigate to client folder
+* ```yarn install``` 
+* ```yarn start```
+
 ## Problem
 
 [The Rubber Hose Problem ](https://en.wikipedia.org/wiki/Rubber-hose_cryptanalysis?fbclid=IwAR2hoWG0Sx9ag1_uNRErwNWnUA8jtvhi2_vo1Tq9JaZ0A-o3TkDT6TwbMHw)
