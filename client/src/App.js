@@ -192,7 +192,7 @@ class App extends Component {
                     <Form className="margin-auto">
                         <Form.Group controlId="formBasicEmail">
                             <Form.Label>Address: </Form.Label>
-                            <Form.Control type="email" placeholder="Enter email" />
+                            <Form.Control placeholder="Enter address" />
                             <Form.Text className="text-muted">
                                 We'll never share your email with anyone else.
                             </Form.Text>
@@ -226,10 +226,10 @@ class App extends Component {
     render() {
         if (this.state.showAsset) {
             return (
-                <div className="App">
-                    <h1>Chicken Dinner 🐓🍗</h1>
+                <div className="App" >
+                    <h1 className="header">Chicken Dinner 🐓🍗</h1>
                     <a href="#" onClick={this.showLogin}>Log out</a>
-                    <RenderTable loginPass={this.state.loginPass} assetNames={this.state.assetNames} enigma={this.props.enigma} address={this.state.address} contractAddress={this.state.contractAddress} />
+                    <RenderTable address={this.state.loginEmail} loginPass={this.state.loginPass} assetNames={this.state.assetNames} enigma={this.props.enigma} address={this.state.address} contractAddress={this.state.contractAddress} />
                 </div>
             )
         } else if (this.state.showRegister) {
@@ -253,7 +253,7 @@ class App extends Component {
                             <Form className="margin-auto" onSubmit={this.handleLogin}>
                                 <Form.Group controlId="formBasicEmail">
                                     <Form.Label>Address: </Form.Label>
-                                    <Form.Control type="email" placeholder="Enter email" value={this.state.loginEmail} onChange={this.loginEmailChange} />
+                                    <Form.Control placeholder="Enter address" value={this.state.loginEmail} onChange={this.loginEmailChange} />
                                 </Form.Group>
                                 <Form.Group controlId="formBasicPassword">
                                     <Form.Label>Enter Your Password: </Form.Label>
@@ -295,7 +295,8 @@ class RenderTable extends React.Component {
             let dataList = result.split("|");
             for (const i in dataList) {
                 let children = []
-                children.push(<td colSpan="2" key={i}>{dataList[i]}</td>)
+                let foo = dataList[i].split('_').join(' ')
+                children.push(<td colSpan="2" key={i}>{foo}</td>)
                 table.push(<tr>{children}</tr>)
             }
             table.push(<tr>
@@ -398,7 +399,7 @@ class RenderTable extends React.Component {
             <div>
                 <h2>Asset Management</h2>
                 <form onSubmit={this.handleSubmit}>
-                    <p>Address: 0x1234567891</p>
+                    <p>Address: {this.props.address} </p>
                     <Table striped bordered hover size="sm">
                         <thead>
                             <tr>
