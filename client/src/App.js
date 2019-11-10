@@ -6,12 +6,10 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-// import { Registration } from './Registration.js';
-// import { Login } from './Login';
-import Assets from './Assets';
 import getEnigmaInit from "./utils/getEnigmaInit";
 import { utils, eeConstants } from 'enigma-js';
 import { initializeEnigma, initializeAccounts, deployMillionairesProblem } from './actions';
+import Table from 'react-bootstrap/Table';
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -26,7 +24,8 @@ class App extends Component {
             loginEmail: '',
             loginPass: '',
             deploymentAddress: '',
-            contractAddress: ''
+            contractAddress: '',
+            assetNames: '',
         };
 
         this.showRegister = this.showRegister.bind(this);
@@ -91,8 +90,167 @@ class App extends Component {
         event.preventDefault();
         console.log("login email: " + this.state.loginEmail + ", login password: " + this.state.loginPass);
 
+        let taskFn2 = 'read_storage(string)';
+        let taskArgs2 = [
+            ['password2', 'string'],
+        ]
+        let taskGasLimit = 10000000;
+        let taskGasPx = utils.toGrains(1);
+        let task2 = await new Promise((resolve, reject) => {
+            this.props.enigma.computeTask(taskFn2, taskArgs2, taskGasLimit, taskGasPx, this.state.address, this.state.contractAddress)
+                .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
+                .on(eeConstants.ERROR, (error) => reject(error));
+        });
+        while (task2.ethStatus === 1) {
+            task2 = await this.props.enigma.getTaskRecordStatus(task2);
+            await sleep(1000);
+        }
+        if (task2.ethStatus === 2) {
+            // Get task2 result by passing in existing task2 - obtains the encrypted, abi-encoded output
+            task2 = await new Promise((resolve, reject) => {
+                this.props.enigma.getTaskResult(task2)
+                    .on(eeConstants.GET_TASK_RESULT_RESULT, (result) => resolve(result))
+                    .on(eeConstants.ERROR, (error) => reject(error));
+            });
+            // Decrypt the task2 result - obtains the decrypted, abi-encoded output
+            task2 = await this.props.enigma.decryptTaskResult(task2);
+            // Abi-decode the output to its desired components
+            const assetNames = this.props.enigma.web3.eth.abi.decodeParameters([{
+                type: 'string',
+                name: 'assetNames',
+            }], task2.decryptedOutput).assetNames;
+            console.log(assetNames);
+            this.setState({assetNames: assetNames});
+            this.showAsset();
+        } else {
+            console.log("login failed" + task2.ethStatus);
+        }
+    }
+
+    RegistrationPage() {
+        return (
+            <Container>
+                <h2>Registration</h2>
+                <Row>
+                    <Form className="margin-auto">
+                        <Form.Group controlId="formBasicEmail">
+                            <Form.Label>Address: </Form.Label>
+                            <Form.Control type="email" placeholder="Enter email" />
+                            <Form.Text className="text-muted">
+                                We'll never share your email with anyone else.
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group controlId="formBasicPassword">
+                            <Form.Label>Fake Password: </Form.Label>
+                            <Form.Control type="password" placeholder="Password" />
+                            <Form.Text className="text-muted">
+                                REMEMBER THIS PASSWORD!!
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group controlId="formBasicPassword">
+                            <Form.Label>Real Password: </Form.Label>
+                            <Form.Control type="password" placeholder="Password" />
+                            <Form.Text className="text-muted">
+                                REMEMBER THIS PASSWORD!!
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Button variant="primary" type="submit">
+                            Submit
+                        </Button>
+                    </Form>
+                </Row>
+            </Container>
+        );
+    }
+
+    render() {
+        if (this.state.showAsset) {
+            return (
+                <div className="App">
+                    <h1>Chicken Dinner 🐓🍗</h1>
+                    <a href="#" onClick={this.showLogin}>Log out</a>
+                    <RenderTable assetNames={this.state.assetNames} enigma={this.props.enigma} address={this.state.address} contractAddress={this.state.contractAddress} />
+                </div>
+            )
+        } else if (this.state.showRegister) {
+            return (
+                <div className="App">
+                    <h1>Chicken Dinner 🐓🍗</h1>
+                    <a href="#" onClick={this.showLogin}>Login</a>
+                    <a href="#" onClick={this.showAsset} className="demo">Demo</a>
+                    <this.RegistrationPage />
+                </div>
+            )
+        } else {
+            return (
+                <div className="App">
+                    <h1>Chicken Dinner 🐓🍗</h1>
+                    <a href="#" onClick={this.showRegister}>Register</a>
+                    <a href="#" onClick={this.showAsset} className="demo">Demo</a>
+                    <Container>
+                        <h2>Login</h2>
+                        <Row>
+                            <Form className="margin-auto" onSubmit={this.handleLogin}>
+                                <Form.Group controlId="formBasicEmail">
+                                    <Form.Label>Address: </Form.Label>
+                                    <Form.Control type="email" placeholder="Enter email" value={this.state.loginEmail} onChange={this.loginEmailChange} />
+                                </Form.Group>
+                                <Form.Group controlId="formBasicPassword">
+                                    <Form.Label>Enter Your Password: </Form.Label>
+                                    <Form.Control type="password" placeholder="Password" value={this.state.loginPass} onChange={this.loginPassChange} />
+                                </Form.Group>
+                                <Button variant="primary" type="submit">
+                                    Submit
+                    </Button>
+                            </Form>
+                        </Row>
+                    </Container>
+                </div>
+            )
+        }
+    }
+}
+class RenderTable extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            newAssetName: ''
+        }
+        this.assetNameChange = this.assetNameChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+    createTable(event) {
+        // mock data:
+        let table = []
+        let result = this.props.assetNames;
+        console.log(result);
+        let dataList = result.split("|");
+        for (const i in dataList) {
+            let children = []
+            children.push(<td colSpan="2" key={i}>{dataList[i]}</td>)
+            table.push(<tr>{children}</tr>)
+        }
+        table.push(<tr>
+            <td>
+                <Form.Control type="text" placeholder="Enter the name of your asset" value={this.state.newAssetName} onChange={this.assetNameChange} />
+            </td>
+            <td>
+                <input type="submit" value="Add" />
+            </td>
+        </tr>)
+        return table
+    }
+
+   async handleSubmit(event) {
+        event.preventDefault();
+        console.log(this.state.newAssetName);
+        // call contract to add assets
+
         let taskFn = 'store_dummy(string)';
-        let taskArgs = [ ['volkswagen', 'string'], ];
+        let taskArgs = [[this.state.newAssetName, 'string'],];
         let taskFn2 = 'read_storage(string)';
         let taskArgs2 = [
             ['password2', 'string'],
@@ -109,132 +267,49 @@ class App extends Component {
             await sleep(1000);
         }
         if (task.ethStatus === 2) {
-            let task2 = await new Promise((resolve, reject) => {
-                this.props.enigma.computeTask(taskFn2, taskArgs2, taskGasLimit, taskGasPx, this.state.address, this.state.contractAddress)
-                    .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
-                    .on(eeConstants.ERROR, (error) => reject(error));
-            });
-            while (task2.ethStatus === 1) {
-                task2 = await this.props.enigma.getTaskRecordStatus(task2);
-                await sleep(1000);
-            }
-            if (task2.ethStatus === 2) {
-                // Get task2 result by passing in existing task2 - obtains the encrypted, abi-encoded output
-                task2 = await new Promise((resolve, reject) => {
-                    this.props.enigma.getTaskResult(task2)
-                        .on(eeConstants.GET_TASK_RESULT_RESULT, (result) => resolve(result))
-                        .on(eeConstants.ERROR, (error) => reject(error));
-                });
-                // Decrypt the task2 result - obtains the decrypted, abi-encoded output
-                task2 = await this.props.enigma.decryptTaskResult(task2);
-                // Abi-decode the output to its desired components
-                const assetName = this.props.enigma.web3.eth.abi.decodeParameters([{
-                    type: 'string',
-                    name: 'assetName',
-                }], task2.decryptedOutput);
-                console.log( assetName);
-            } else {
-                console.log("failed " + task2.ethStatus);
-            }
+            this.forceUpdate();
         }
         else {
-                console.log("task 1 failed: ");
-            }
-            // call smart contract here, supply email and password
-            this.showAsset();
-        }
 
-        RegistrationPage() {
-            return (
-                <Container>
-                    <h2>Registration</h2>
-                    <Row>
-                        <Form className="margin-auto">
-                            <Form.Group controlId="formBasicEmail">
-                                <Form.Label>Address: </Form.Label>
-                                <Form.Control type="email" placeholder="Enter email" />
-                                <Form.Text className="text-muted">
-                                    We'll never share your email with anyone else.
-                            </Form.Text>
-                            </Form.Group>
-
-                            <Form.Group controlId="formBasicPassword">
-                                <Form.Label>Fake Password: </Form.Label>
-                                <Form.Control type="password" placeholder="Password" />
-                                <Form.Text className="text-muted">
-                                    REMEMBER THIS PASSWORD!!
-                            </Form.Text>
-                            </Form.Group>
-
-                            <Form.Group controlId="formBasicPassword">
-                                <Form.Label>Real Password: </Form.Label>
-                                <Form.Control type="password" placeholder="Password" />
-                                <Form.Text className="text-muted">
-                                    REMEMBER THIS PASSWORD!!
-                            </Form.Text>
-                            </Form.Group>
-
-                            <Button variant="primary" type="submit">
-                                Submit
-                        </Button>
-                        </Form>
-                    </Row>
-                </Container>
-            );
-        }
-
-        render() {
-            if (this.state.showAsset) {
-                return (
-                    <div className="App">
-                        <h1>Chicken Dinner 🐓🍗</h1>
-                        <a href="#" onClick={this.showLogin}>Log out</a>
-                        <Assets />
-                    </div>
-                )
-            } else if (this.state.showRegister) {
-                return (
-                    <div className="App">
-                        <h1>Chicken Dinner 🐓🍗</h1>
-                        <a href="#" onClick={this.showLogin}>Login</a>
-                        <a href="#" onClick={this.showAsset} className="demo">Demo</a>
-                        <this.RegistrationPage />
-                    </div>
-                )
-            } else {
-                return (
-                    <div className="App">
-                        <h1>Chicken Dinner 🐓🍗</h1>
-                        <a href="#" onClick={this.showRegister}>Register</a>
-                        <a href="#" onClick={this.showAsset} className="demo">Demo</a>
-                        <Container>
-                            <h2>Login</h2>
-                            <Row>
-                                <Form className="margin-auto" onSubmit={this.handleLogin}>
-                                    <Form.Group controlId="formBasicEmail">
-                                        <Form.Label>Address: </Form.Label>
-                                        <Form.Control type="email" placeholder="Enter email" value={this.state.loginEmail} onChange={this.loginEmailChange} />
-                                    </Form.Group>
-                                    <Form.Group controlId="formBasicPassword">
-                                        <Form.Label>Enter Your Password: </Form.Label>
-                                        <Form.Control type="password" placeholder="Password" value={this.state.loginPass} onChange={this.loginPassChange} />
-                                    </Form.Group>
-                                    <Button variant="primary" type="submit">
-                                        Submit
-                    </Button>
-                                </Form>
-                            </Row>
-                        </Container>
-                    </div>
-                )
-            }
         }
     }
 
-    const mapStateToProps = (state) => {
-        return { enigma: state.enigma }
-    };
+    assetNameChange(event) {
+        console.log(event.target)
+        event && event.target &&
+            this.setState(
+                {
+                    assetName: event.target.value
+                }
+            );
+    }
 
-    export default connect(
-        mapStateToProps, { initializeEnigma, initializeAccounts, deployMillionairesProblem }
-    )(App);
+    render() {
+        return (
+            <div>
+                <h2>Asset Management</h2>
+                <form onSubmit={this.handleSubmit}>
+                    <p>Address: 0x1234567891</p>
+                    <Table striped bordered hover size="sm">
+                        <thead>
+                            <tr>
+                                <th colSpan="2">Asset Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.createTable()}
+                        </tbody>
+                    </Table>
+                </form>
+            </div>
+        );
+    }
+}
+
+const mapStateToProps = (state) => {
+    return { enigma: state.enigma }
+};
+
+export default connect(
+    mapStateToProps, { initializeEnigma, initializeAccounts, deployMillionairesProblem }
+)(App);
