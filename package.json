@@ -7,8 +7,10 @@
   },
   "dependencies": {
     "@enigmampc/discovery-cli": "^0.1.4",
+    "bootstrap": "^4.3.1",
     "dotenv": "^8.0.0",
-    "enigma-js": "^0.3.0"
+    "enigma-js": "^0.3.0",
+    "react-bootstrap": "^1.0.0-beta.14"
   },
   "devDependencies": {},
   "scripts": {
