@@ -7,8 +7,14 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import { Registration } from './Registration.js';
+import getEnigmaInit from "../utils/getEnigmaInit.js";
 
-export function Login() {
+class Login extends React.Component {
+    async componentDidMount() {
+        // Initialize enigma-js client library (including web3)
+        const enigma = await getEnigmaInit();
+    }
+    render() {
     return (
         <Container>
             <h2>Login</h2>
@@ -31,4 +37,5 @@ export function Login() {
             </Row>
         </Container>
     );
+}
 }
