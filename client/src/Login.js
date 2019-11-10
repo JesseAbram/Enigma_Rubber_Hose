@@ -13,7 +13,7 @@ export function Login() {
         <Container>
             <h2>Login</h2>
             <Row>
-                <Form>
+                <Form className="margin-auto">
                     <Form.Group controlId="formBasicEmail">
                         <Form.Label>Address: </Form.Label>
                         <Form.Control type="email" placeholder="Enter email" />

@@ -12,13 +12,13 @@ export function Registration() {
         <Container>
             <h2>Registration</h2>
             <Row>
-                <Form>
+                <Form className="margin-auto">
                     <Form.Group controlId="formBasicEmail">
                         <Form.Label>Address: </Form.Label>
                         <Form.Control type="email" placeholder="Enter email" />
                         <Form.Text className="text-muted">
                             We'll never share your email with anyone else.
-            </Form.Text>
+                        </Form.Text>
                     </Form.Group>
 
                     <Form.Group controlId="formBasicPassword">
@@ -26,7 +26,7 @@ export function Registration() {
                         <Form.Control type="password" placeholder="Password" />
                         <Form.Text className="text-muted">
                             REMEMBER THIS PASSWORD!!
-            </Form.Text>
+                        </Form.Text>
                     </Form.Group>
 
                     <Form.Group controlId="formBasicPassword">
@@ -34,12 +34,12 @@ export function Registration() {
                         <Form.Control type="password" placeholder="Password" />
                         <Form.Text className="text-muted">
                             REMEMBER THIS PASSWORD!!
-            </Form.Text>
+                        </Form.Text>
                     </Form.Group>
 
                     <Button variant="primary" type="submit">
                         Submit
-            </Button>
+                    </Button>
                 </Form>
             </Row>
         </Container>

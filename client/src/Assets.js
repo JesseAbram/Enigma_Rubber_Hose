@@ -11,11 +11,10 @@ import { Registration } from './Registration.js';
 import { Login } from './Login';
 import Table from 'react-bootstrap/Table';
 
-function LoggedIn() {
+function Assets() {
     return (
         <div>
-            <h1>Chicken Dinner 🐓🍗</h1>
-            <h2>Logged In</h2>
+            <h2>Asset Management</h2>
             <p>Address: 0x1234567891</p>
             {<RenderTable />}
         </div>
@@ -81,4 +80,4 @@ class RenderTable extends React.Component {
     }
 }
 
-export default LoggedIn;
+export default Assets;
