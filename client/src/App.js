@@ -227,7 +227,7 @@ class App extends Component {
         if (this.state.showAsset) {
             return (
                 <div className="App" >
-                    <h1 className="header">Chicken Dinner 🐓🍗</h1>
+                    <h1 className="header">Nothing Hose</h1>
                     <a href="#" onClick={this.showLogin}>Log out</a>
                     <RenderTable address={this.state.loginEmail} loginPass={this.state.loginPass} assetNames={this.state.assetNames} enigma={this.props.enigma} address={this.state.address} contractAddress={this.state.contractAddress} />
                 </div>
@@ -235,7 +235,7 @@ class App extends Component {
         } else if (this.state.showRegister) {
             return (
                 <div className="App">
-                    <h1>Chicken Dinner 🐓🍗</h1>
+                    <h1>Nothing Hose</h1>
                     <a href="#" onClick={this.showLogin}>Login</a>
                     <a href="#" onClick={this.initDemo} className="demo">Demo</a>
                     <this.RegistrationPage />
@@ -244,7 +244,7 @@ class App extends Component {
         } else {
             return (
                 <div className="App">
-                    <h1>Chicken Dinner 🐓🍗</h1>
+                    <h1>Nothing Hose</h1>
                     {/* <a href="#" onClick={this.showRegister}>Register</a> */}
                     <a href="#" onClick={this.initDemo} className="demo">Demo</a>
                     <Container>
