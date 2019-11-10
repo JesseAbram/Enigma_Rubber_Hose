@@ -26,16 +26,14 @@ class RenderTable extends React.Component {
     constructor() {
         super();
         this.state = {
-            assetName: '',
-            assetDesc: ''
+            assetName: ''
         }
         this.assetNameChange = this.assetNameChange.bind(this);
-        this.assetDescChange = this.assetDescChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
     handleSubmit(event) {
         console.log(this.state.assetName);
-        console.log(this.state.assetDesc);
+        // call contract to add assets
         event.preventDefault();
     }
 
@@ -45,21 +43,9 @@ class RenderTable extends React.Component {
         this.setState(
             {
                 assetName: event.target.value
-                // assetDesc: event.target.assetDesc
             }
         );
-      }
-
-      assetDescChange(event) {
-        console.log(event.target)
-        event && event.target &&
-        this.setState(
-            {
-                // assetName: event.target.value
-                assetDesc: event.target.value
-            }
-        );
-      }
+    }
 
     render() {
         return (
@@ -67,30 +53,22 @@ class RenderTable extends React.Component {
             <Table striped bordered hover size="sm">
                 <thead>
                     <tr>
-                        <th>Asset Type</th>
                         <th colspan="2">Asset Description</th>
-                        {/* <th></th> */}
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>1</td>
                         <td colspan="2">Mark</td>
                     </tr>
                     <tr>
-                        <td>2</td>
                         <td colspan="2">Jacob</td>
                     </tr>
                     <tr>
-                        <td>3</td>
                         <td colSpan = "2">Larry the Bird</td>
                     </tr>
                     <tr>
                         <td>
-                            <input type="text"  placeholder="Enter the name of your asset" value={this.state.assetName} onChange={this.assetNameChange}/>
-                        </td>
-                        <td>
-                            <input type="text"  placeholder="Enter a description of your asset" value={this.state.assetDesc} onChange={this.assetDescChange}/>
+                            <Form.Control type="text"  placeholder="Enter the name of your asset" value={this.state.assetName} onChange={this.assetNameChange}/>
                         </td>
                         <td>
                             <input type="submit" value="Add" />
