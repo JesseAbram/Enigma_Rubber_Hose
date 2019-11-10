@@ -19,7 +19,8 @@
     "test": "discovery test",
     "compile": "discovery compile",
     "start": "discovery start",
-    "deploy": "discovery migrate"
+    "deploy": "discovery migrate",
+    "init": "discovery init"
   },
   "author": "",
   "license": "ISC"
