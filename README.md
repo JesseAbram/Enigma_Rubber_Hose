@@ -4,7 +4,7 @@ This product is a demo of secret smart contracts on Enigma.
 
 ## Running 
 * ``` yarn install```
-* ``` yarn init```
+* ``` yarn init``` --> downloads a 16 gb docker file fyi (use software option)
 * ```yarn compile``` (compiles rust smart contracts)
 * ```yarn start```, runs enigma and ganache (must have already gotten docker image)
 * ```yarn deploy``` deploy smart contracts
