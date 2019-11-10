@@ -97,7 +97,7 @@ module.exports = async function(deployer, network, accounts) {
     filename: 'simple_addition.wasm',
     fn: 'construct()',
     args: [['password1', 'string'], ['password2', 'string']],
-    gasLimit: 10000000,
+    gasLimit: 1000000,
     gasPrice: utils.toGrains(1),
     from: accounts[0]
   };

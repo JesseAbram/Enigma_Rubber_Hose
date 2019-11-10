@@ -40,12 +40,17 @@ contract("Sample", accounts => {
   })
 
   let task;
+  let task2; 
   it('should execute compute task', async () => {
-    let taskFn = 'addition(uint256,uint256)';
+    let taskFn = 'store_dummy';
     let taskArgs = [
-      [76, 'uint256'],
-      [17, 'uint256'],
+      ['test', 'string'],
+      
     ];
+    let taskFn2 = 'read_storage'
+    let taskArgs2 = [
+      ['password', 'string'],
+    ]
     let taskGasLimit = 100000;
     let taskGasPx = utils.toGrains(1);
     const contractAddr = fs.readFileSync('test/simple_addition.txt', 'utf-8');
@@ -54,32 +59,49 @@ contract("Sample", accounts => {
         .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
         .on(eeConstants.ERROR, (error) => reject(error));
     });
-  });
-
-  it('should get the pending task', async () => {
-    task = await enigma.getTaskRecordStatus(task);
-    expect(task.ethStatus).to.equal(1);
-  });
-
-  it('should get the confirmed task', async () => {
-    do {
-      await sleep(1000);
-      task = await enigma.getTaskRecordStatus(task);
-      process.stdout.write('Waiting. Current Task Status is '+task.ethStatus+'\r');
-    } while (task.ethStatus != 2);
-    expect(task.ethStatus).to.equal(2);
-    process.stdout.write('Completed. Final Task Status is '+task.ethStatus+'\n');
-  }, 10000);
-
-  it('should get the result and verify the computation is correct', async () => {
-    task = await new Promise((resolve, reject) => {
-      enigma.getTaskResult(task)
-        .on(eeConstants.GET_TASK_RESULT_RESULT, (result) => resolve(result))
+    task2 = await new Promise((resolve, reject) => {
+      enigma.computeTask(taskFn2, taskArgs2, taskGasLimit, taskGasPx, accounts[0], contractAddr)
+        .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
         .on(eeConstants.ERROR, (error) => reject(error));
+
     });
-    expect(task.engStatus).to.equal('SUCCESS');
-    task = await enigma.decryptTaskResult(task);
-    expect(parseInt(task.decryptedOutput, 16)).to.equal(76+17);
+
+  
+   task2 = await new Promise((resolve, reject) => {
+      enigma.getTaskResult(task)
+          .on(eeConstants.GET_TASK_RESULT_RESULT, (result) => resolve(result))
+          .on(eeConstants.ERROR, (error) => reject(error));
   });
+
+  task2 = await enigma.decryptTaskResult(task2);
+  console.log(task2)
+
+  // it('should get the pending task', async () => {
+  //   task = await enigma.getTaskRecordStatus(task);
+  //   expect(task.ethStatus).to.equal(1);
+  // });
+
+  // it('should get the confirmed task', async () => {
+  //   do {
+  //     await sleep(1000);
+  //     task = await enigma.getTaskRecordStatus(task);
+  //     process.stdout.write('Waiting. Current Task Status is '+task.ethStatus+'\r');
+  //   } while (task.ethStatus != 2);
+  //   expect(task.ethStatus).to.equal(2);
+  //   process.stdout.write('Completed. Final Task Status is '+task.ethStatus+'\n');
+  // }, 10000);
+
+  // it('should get the result and verify the computation is correct', async () => {
+  //   task = await new Promise((resolve, reject) => {
+  //     enigma.getTaskResult(task)
+  //       .on(eeConstants.GET_TASK_RESULT_RESULT, (result) => resolve(result))
+  //       .on(eeConstants.ERROR, (error) => reject(error));
+  //   });
+  //   expect(task.engStatus).to.equal('SUCCESS');
+  //   task = await enigma.decryptTaskResult(task);
+  //   expect(parseInt(task.decryptedOutput, 16)).to.equal(76+17);
+  // });
+})
+
 
 })
