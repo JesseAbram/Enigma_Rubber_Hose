@@ -34,6 +34,7 @@ class App extends Component {
         this.loginEmailChange = this.loginEmailChange.bind(this);
         this.loginPassChange = this.loginPassChange.bind(this);
         this.handleLogin = this.handleLogin.bind(this);
+        this.initDemo = this.initDemo.bind(this);
     }
 
     async componentDidMount() {
@@ -51,6 +52,59 @@ class App extends Component {
             .getSecretContractAddresses(secretContractCount - 1, secretContractCount).call())[0];
         this.setState({ contractAddress: lastDeployedContract })
         console.log("set state to " + lastDeployedContract);
+    }
+
+    async initDemo () {
+        console.log(this.props)
+        let real_mnemonic = ['presidential_peppery_hunks_quashed_attractive_milkmaids_noisily',
+            'pickled_pugs_healed_quotes_atop_medusa_nasally',
+            'purring_philosophers_harassed_quaint_ancient_mushrooms_naughtily',
+            'plump_pigeons_honored_queenie_among_masked_nuns'];
+        let fake_mnemonic = ['pompous_priestesses_helped_quaint_acrobatic_meatballs',
+            'pretentious_pluto_harassed_quicksilver_amongst_moaning_nightcrawler']
+        let taskFn = 'write_storage(string, string)';
+        let taskGasLimit = 10000000;
+        let taskGasPx = utils.toGrains(1);
+        for (let m of real_mnemonic) {
+            let taskArgs = [
+                ['password1', 'string'],
+                [m, 'string'],
+            ]
+            let task = await new Promise((resolve, reject) => {
+            this.props.enigma.computeTask(taskFn, taskArgs, taskGasLimit, taskGasPx, this.state.address, this.state.contractAddress)
+                    .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
+                    .on(eeConstants.ERROR, (error) => reject(error));
+            });
+            while (task.ethStatus === 1) {
+                task = await this.props.enigma.getTaskRecordStatus(task);
+                await sleep(1000);
+            }
+            if (task.ethStatus === 2) {
+                console.log("real mnemonic updated")
+            } else {
+                console.log("real mnemonic update failed")
+            }
+        }
+        for (let m of fake_mnemonic) {
+            let taskArgs = [
+                ['password2', 'string'],
+                [m, 'string'],
+            ]
+            let task = await new Promise((resolve, reject) => {
+                this.props.enigma.computeTask(taskFn, taskArgs, taskGasLimit, taskGasPx, this.state.address, this.state.contractAddress)
+                    .on(eeConstants.SEND_TASK_INPUT_RESULT, (result) => resolve(result))
+                    .on(eeConstants.ERROR, (error) => reject(error));
+            });
+            while (task.ethStatus === 1) {
+                task = await this.props.enigma.getTaskRecordStatus(task);
+                await sleep(1000);
+            }
+            if (task.ethStatus === 2) {
+                console.log("fake mnemonic updated")
+            } else {
+                console.log("fake mnemonic update failed")
+            }
+        }
     }
 
     showRegister() {
@@ -183,7 +237,7 @@ class App extends Component {
                 <div className="App">
                     <h1>Chicken Dinner 🐓🍗</h1>
                     <a href="#" onClick={this.showLogin}>Login</a>
-                    <a href="#" onClick={this.showAsset} className="demo">Demo</a>
+                    <a href="#" onClick={this.initDemo} className="demo">Demo</a>
                     <this.RegistrationPage />
                 </div>
             )
@@ -191,8 +245,8 @@ class App extends Component {
             return (
                 <div className="App">
                     <h1>Chicken Dinner 🐓🍗</h1>
-                    <a href="#" onClick={this.showRegister}>Register</a>
-                    <a href="#" onClick={this.showAsset} className="demo">Demo</a>
+                    {/* <a href="#" onClick={this.showRegister}>Register</a> */}
+                    <a href="#" onClick={this.initDemo} className="demo">Demo</a>
                     <Container>
                         <h2>Login</h2>
                         <Row>
@@ -260,11 +314,13 @@ class RenderTable extends React.Component {
         console.log(this.state.newAssetName);
         // call contract to add assets
 
-        let taskFn = 'store_secret(string)';
+        let taskFn = 'write_storage(string, string)';
         let taskArgs = [
-            // [this.props.loginPass, 'string'],
+            [this.props.loginPass, 'string'],
             [this.state.newAssetName, 'string'],
         ]
+
+        console.log(taskArgs)
         let taskGasLimit = 10000000;
         let taskGasPx = utils.toGrains(1);
         let task = await new Promise((resolve, reject) => {
