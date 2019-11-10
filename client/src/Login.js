@@ -14,18 +14,6 @@ import { computeRichestMillionaire } from "./actions";
 import { utils, eeConstants } from 'enigma-js';
 import Button from 'react-bootstrap/Button';
 
-const styles = theme => ({
-    root: {
-        flexGrow: 1,
-    },
-    paper: {
-        padding: theme.spacing(2),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    },
-});
-
-
 class Login extends React.Component {
     constructor() {
         super();
